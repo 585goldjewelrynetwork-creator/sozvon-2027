@@ -112,11 +112,11 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .mini b{font-weight:600;color:var(--coral)}
 
 /* ---------- prediction card ---------- */
-.layer{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;gap:14px;padding:14px 16px;background:rgba(10,7,7,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);overflow-y:auto}
-.layer.open{display:flex;animation:fade .25s ease-out}
+.layer{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;gap:14px;padding:14px 16px;background:rgba(10,7,7,.84);overflow-y:auto}
+.layer.open{display:flex}
 @keyframes fade{from{background:rgba(10,7,7,0)}}
 .ticket{--tw:max(250px,min(86vw,370px,calc((100vh - 170px) * .7404)));flex:none;margin-top:auto;width:var(--tw);aspect-ratio:998/1348;background:url(card.webp) center/100% 100% no-repeat;color:var(--ink);
-  padding:calc(var(--tw) * .135) calc(var(--tw) * .1) calc(var(--tw) * .075) calc(var(--tw) * .09);display:flex;flex-direction:column;filter:drop-shadow(0 18px 28px rgba(0,0,0,.55));transform:rotate(-1.2deg);outline:0}
+  padding:calc(var(--tw) * .135) calc(var(--tw) * .1) calc(var(--tw) * .075) calc(var(--tw) * .09);display:flex;flex-direction:column;box-shadow:0 26px 34px -16px rgba(0,0,0,.7);outline:0}
 @supports (height:100dvh){ .ticket{--tw:max(250px,min(86vw,370px,calc((100dvh - 170px) * .7404)))} }
 .ticket h2{margin:0;font:700 calc(var(--tw) * .056)/1.05 Oswald,"Arial Narrow",sans-serif;color:var(--red);letter-spacing:.06em;text-transform:uppercase}
 .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:calc(var(--tw) * .022);font:500 calc(var(--tw) * .034)/1 Inter,sans-serif;color:rgba(18,18,18,.62)}
@@ -127,7 +127,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .ticket footer img{height:calc(var(--tw) * .08);width:auto;display:block}
 .ticket footer span{font:700 calc(var(--tw) * .04)/1 Oswald,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--wine)}
 .actions{flex:none;width:min(86vw,370px);margin-bottom:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.layer.open .actions{animation:rise .3s .35s ease-out backwards}
+
 @keyframes rise{from{opacity:0;transform:translateY(10px)}}
 .btn{min-height:48px;border-radius:12px;border:1px solid transparent;font:600 15px/1.1 Inter,sans-serif;padding:0 10px}
 .btn.primary{grid-column:1/-1;min-height:54px;background:var(--red);color:var(--paper);font:700 19px/1 Oswald,"Arial Narrow",sans-serif;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 4px 0 var(--wine);padding-top:3px}
@@ -173,7 +173,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
       <div class="pane pane-call" id="pane-call">
         <div class="bar"><i class="dot"></i><span id="bar-call">Идёт соединение</span></div>
         <div class="avatar">2027</div>
-        <p class="status" id="status"></p>
+        <p class="status" id="status"></p><div class="hint" style="animation:none;opacity:.6">нажмите на экран, чтобы пропустить</div>
       </div>
 
       <div class="pane pane-done" id="pane-done">
@@ -415,7 +415,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
     if (state === 'connecting' || state === 'printing') return;
     closeTicket(false);
     state = 'connecting';
-    const pick = draw(), slow = reduced() ? 0.5 : 1;
+    const pick = draw(), slow = 1;
 
     Snd.click();
     knob.classList.add('down');
@@ -430,18 +430,18 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
       const all = topic === 'all';
       setStatus(all ? 'Вы обзвонили весь 2027-й. Идём на второй круг' : `Тема «${TOPIC[topic]}» пройдена. Идём на второй круг`);
       lamp(1); Snd.dial();
-      await wait(1300 * slow);
+      await wait(2000 * slow);
     } else {
       setStatus('Ищем свободный слот в 2027…');
       lamp(1); Snd.dial();
-      await wait(650 * slow);
+      await wait(900 * slow);
     }
     setStatus('Меня слышно?'); lamp(2); Snd.blip();
-    await wait(650 * slow);
+    await wait(900 * slow);
     panes.call.classList.add('online');
     $('bar-call').textContent = 'На связи';
     setStatus('2027 на линии'); lamp(3); Snd.ding();
-    await wait(650 * slow);
+    await wait(900 * slow);
 
     state = 'printing';
     current = pick;
@@ -470,13 +470,13 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
       ticket.style.transform = `translate(${dx}px,${dy}px) scale(${s})`;
       void ticket.offsetWidth;
       ticket.style.transition = 'transform .5s cubic-bezier(.2,.85,.25,1.1)';
-      ticket.style.transform = 'rotate(-1.2deg)';
+      ticket.style.transform = 'none';
       Snd.paper();
       setTimeout(() => { slot.classList.remove('out'); }, 120);
     } else {
       ticket.style.transform = '';
     }
-    setTimeout(() => ticket.focus({ preventScroll: true }), reduced() ? 0 : 520);
+    setTimeout(() => { ticket.style.transition = ''; ticket.style.transform = ''; }, reduced() ? 0 : 560);
   }
 
   function closeTicket(backToIdle) {
