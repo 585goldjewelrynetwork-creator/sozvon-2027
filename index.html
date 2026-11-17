@@ -26,9 +26,9 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .sr{position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- room ---------- */
-.room{position:fixed;inset:0;background:var(--ink) url(assets/room-wide.jpg) center/cover no-repeat;z-index:0}
+.room{position:fixed;inset:0;background:var(--ink) url(room-wide.jpg) center/cover no-repeat;z-index:0}
 .room::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,rgba(18,18,18,.15) 0%,rgba(18,18,18,.35) 45%,rgba(18,18,18,.72) 100%)}
-@media (max-aspect-ratio:1/1){ .room{background-image:url(assets/room-tall.jpg)} }
+@media (max-aspect-ratio:1/1){ .room{background-image:url(room-tall.jpg)} }
 
 .stage{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 16px 8px}
 @supports (height:100dvh){ .stage{min-height:100dvh} }
@@ -56,7 +56,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 /* ---------- TV screen ---------- */
 .screen{position:absolute;left:14.269%;top:25.149%;width:71.461%;height:30.046%;overflow:hidden;color:var(--paper);
   background:radial-gradient(ellipse at 50% 42%,#33181b 0%,#1a0e10 55%,#0c0707 100%);
-  -webkit-mask:url(assets/screen-mask.png) center/100% 100% no-repeat;mask:url(assets/screen-mask.png) center/100% 100% no-repeat}
+  -webkit-mask:url(screen-mask.png) center/100% 100% no-repeat;mask:url(screen-mask.png) center/100% 100% no-repeat}
 .screen::before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
 .screen::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.55) 100%),linear-gradient(160deg,rgba(255,255,255,.09) 0%,transparent 28%)}
 .noise{position:absolute;inset:0;width:100%;height:100%;z-index:2;opacity:0;mix-blend-mode:screen;image-rendering:pixelated;pointer-events:none}
@@ -95,7 +95,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 
 /* ---------- card coming out of the slot ---------- */
 .slot{position:absolute;left:33.2%;top:87.45%;width:33.6%;height:calc(var(--u) * 21);overflow:hidden;pointer-events:none}
-.peek{width:100%;height:100%;background:url(assets/card.webp) center bottom/100% auto no-repeat;transform:translateY(-104%)}
+.peek{width:100%;height:100%;background:url(card.webp) center bottom/100% auto no-repeat;transform:translateY(-104%)}
 .slot.out .peek{transform:none;transition:transform .45s steps(9,end)}
 
 /* ---------- controls ---------- */
@@ -115,7 +115,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .layer{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;gap:14px;padding:14px 16px;background:rgba(10,7,7,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);overflow-y:auto}
 .layer.open{display:flex;animation:fade .25s ease-out}
 @keyframes fade{from{background:rgba(10,7,7,0)}}
-.ticket{--tw:max(250px,min(86vw,370px,calc((100vh - 170px) * .7404)));flex:none;margin-top:auto;width:var(--tw);aspect-ratio:998/1348;background:url(assets/card.webp) center/100% 100% no-repeat;color:var(--ink);
+.ticket{--tw:max(250px,min(86vw,370px,calc((100vh - 170px) * .7404)));flex:none;margin-top:auto;width:var(--tw);aspect-ratio:998/1348;background:url(card.webp) center/100% 100% no-repeat;color:var(--ink);
   padding:calc(var(--tw) * .135) calc(var(--tw) * .1) calc(var(--tw) * .075) calc(var(--tw) * .09);display:flex;flex-direction:column;filter:drop-shadow(0 18px 28px rgba(0,0,0,.55));transform:rotate(-1.2deg);outline:0}
 @supports (height:100dvh){ .ticket{--tw:max(250px,min(86vw,370px,calc((100dvh - 170px) * .7404)))} }
 .ticket h2{margin:0;font:700 calc(var(--tw) * .056)/1.05 Oswald,"Arial Narrow",sans-serif;color:var(--red);letter-spacing:.06em;text-transform:uppercase}
@@ -152,11 +152,11 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   <h1 class="sr">Автомат предсказаний «На линии 2027» компании «Созвон»</h1>
 
   <div class="machine" id="machine">
-    <img class="body" src="assets/automat.webp" alt="" width="876" height="1511">
+    <img class="body" src="automat.webp" alt="" width="876" height="1511">
     <i class="beacon" aria-hidden="true"></i>
 
     <div class="sign" aria-hidden="true">
-      <img src="assets/logo.png" alt="">
+      <img src="logo.png" alt="">
       <span>На линии <b>2027</b></span>
     </div>
 
@@ -214,7 +214,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
     <div class="meta"><span id="t-num"></span><span class="tag" id="t-tag"></span></div>
     <p class="text" id="t-text"></p>
     <p class="fine">Сигнал из 2027 не проверен. Точность не гарантируется, настроение — да.</p>
-    <footer><img src="assets/logo.png" alt="Созвон"><span>На линии 2027</span></footer>
+    <footer><img src="logo.png" alt="Созвон"><span>На линии 2027</span></footer>
   </article>
   <div class="actions">
     <button class="btn primary" id="again" type="button">Соединиться ещё раз</button>
@@ -525,7 +525,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
     const b = $('save');
     b.disabled = true;
     try {
-      const [card, logo] = await Promise.all([loadImg('assets/card.webp'), loadImg('assets/logo.png')]);
+      const [card, logo] = await Promise.all([loadImg('card.webp'), loadImg('logo.png')]);
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
       const W = 998, H = 1348, L = W * 0.09, R = W * 0.9, maxW = R - L;
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
