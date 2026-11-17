@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="ru" data-motion="full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Созвон — автомат предсказаний «На линии 2027»</title>
+<meta name="description" content="Шуточный новогодний автомат: соединитесь с 2027 годом и получите доброе предсказание.">
+<meta name="theme-color" content="#121212">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E4252B'/%3E%3Ccircle cx='32' cy='32' r='15' fill='none' stroke='%23F5F2EA' stroke-width='7'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#E4252B; --ink:#121212; --paper:#F5F2EA; --coral:#FFB6BC; --wine:#6E2029;
+  --mh:max(300px, min(calc(100vh - 192px), calc(92vw * 1.7249), 780px));
+  --u:calc(var(--mh) * 0.0057975);            /* 1% of the automat's width */
+}
+@supports (height:100dvh){
+  :root{ --mh:max(300px, min(calc(100dvh - 192px), calc(92vw * 1.7249), 780px)); }
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--ink);color:var(--paper);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sr{position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- room ---------- */
+.room{position:fixed;inset:0;background:var(--ink) url(assets/room-wide.jpg) center/cover no-repeat;z-index:0}
+.room::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 55%,rgba(18,18,18,.15) 0%,rgba(18,18,18,.35) 45%,rgba(18,18,18,.72) 100%)}
+@media (max-aspect-ratio:1/1){ .room{background-image:url(assets/room-tall.jpg)} }
+
+.stage{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 16px 8px}
+@supports (height:100dvh){ .stage{min-height:100dvh} }
+
+/* ---------- automat ---------- */
+.machine{position:relative;flex:none;height:var(--mh);width:calc(var(--u) * 100);filter:drop-shadow(0 calc(var(--u) * 5) calc(var(--u) * 7) rgba(0,0,0,.6))}
+.machine .body{position:absolute;inset:0;width:100%;height:100%;user-select:none;pointer-events:none}
+.machine.bump{animation:bump .22s ease-out}
+@keyframes bump{30%{transform:translateY(calc(var(--u) * .9))}60%{transform:translateY(calc(var(--u) * -.3))}}
+
+.sign{position:absolute;left:7.4%;top:10.9%;width:85.2%;height:7.74%;display:flex;align-items:center;justify-content:center;gap:calc(var(--u) * 3)}
+.sign img{height:calc(var(--u) * 8.4);width:auto;display:block}
+.sign span{font:700 calc(var(--u) * 6.4)/1 Oswald,"Arial Narrow",sans-serif;color:var(--ink);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.sign b{color:var(--red);font-weight:700}
+
+.lamp{position:absolute;top:62.54%;width:calc(var(--u) * 3.3);height:calc(var(--u) * 3.3);margin:calc(var(--u) * -1.65) 0 0 calc(var(--u) * -1.65);border-radius:50%;opacity:0;transition:opacity .12s}
+.lamp.l1{left:72.2%;background:radial-gradient(circle,#fff 30%,var(--paper) 70%);box-shadow:0 0 calc(var(--u) * 3) calc(var(--u) * 1.2) rgba(245,242,234,.9)}
+.lamp.l2{left:79.22%;background:radial-gradient(circle,#fff 15%,var(--coral) 70%);box-shadow:0 0 calc(var(--u) * 3) calc(var(--u) * 1.2) rgba(255,182,188,.9)}
+.lamp.l3{left:86.3%;background:radial-gradient(circle,#ffd0d0 10%,#ff3b41 70%);box-shadow:0 0 calc(var(--u) * 3) calc(var(--u) * 1.2) rgba(255,59,65,.95)}
+.lamp.on{opacity:1}
+.beacon{position:absolute;left:50%;top:2.6%;width:calc(var(--u) * 16);height:calc(var(--u) * 16);margin:calc(var(--u) * -8) 0 0 calc(var(--u) * -8);border-radius:50%;background:radial-gradient(circle,rgba(255,214,218,.95) 0%,rgba(255,182,188,.55) 30%,rgba(255,182,188,0) 68%);opacity:0;pointer-events:none}
+.busy .beacon{animation:beacon .5s ease-in-out infinite alternate}
+@keyframes beacon{from{opacity:.15}to{opacity:1}}
+
+/* ---------- TV screen ---------- */
+.screen{position:absolute;left:14.269%;top:25.149%;width:71.461%;height:30.046%;overflow:hidden;color:var(--paper);
+  background:radial-gradient(ellipse at 50% 42%,#33181b 0%,#1a0e10 55%,#0c0707 100%);
+  -webkit-mask:url(assets/screen-mask.png) center/100% 100% no-repeat;mask:url(assets/screen-mask.png) center/100% 100% no-repeat}
+.screen::before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
+.screen::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(0,0,0,.55) 100%),linear-gradient(160deg,rgba(255,255,255,.09) 0%,transparent 28%)}
+.noise{position:absolute;inset:0;width:100%;height:100%;z-index:2;opacity:0;mix-blend-mode:screen;image-rendering:pixelated;pointer-events:none}
+.busy .noise{opacity:.2}
+.pane{position:absolute;inset:0;z-index:1;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(var(--u) * 5.5) calc(var(--u) * 7) calc(var(--u) * 4.5);gap:calc(var(--u) * 1.6)}
+.pane.show{display:flex;animation:crt .28s ease-out}
+@keyframes crt{from{opacity:0;transform:scaleY(.04)}60%{opacity:1;transform:scaleY(1.03)}to{transform:none}}
+.bar{position:absolute;left:0;right:0;top:calc(var(--u) * 4.2);display:flex;align-items:center;justify-content:center;gap:calc(var(--u) * 1.4);font:600 calc(var(--u) * 2.9)/1 Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,242,234,.72)}
+.dot{width:calc(var(--u) * 1.9);height:calc(var(--u) * 1.9);border-radius:50%;background:#5fd08a}
+.busy .dot,.pane-call .dot{background:var(--red);animation:blink .6s steps(2,start) infinite}
+@keyframes blink{50%{opacity:.25}}
+.count{font:600 calc(var(--u) * 3.3)/1.1 Inter,sans-serif;color:var(--coral);letter-spacing:.02em;margin-top:calc(var(--u) * 3)}
+.lead{font:600 calc(var(--u) * 4.5)/1.28 Inter,sans-serif;margin:0;text-wrap:balance}
+.lead em{font-style:normal;color:var(--coral)}
+.hint{font:500 calc(var(--u) * 3.1)/1 Inter,sans-serif;color:rgba(245,242,234,.7);animation:blink 1.4s steps(2,start) infinite}
+.avatar{position:relative;width:calc(var(--u) * 15);height:calc(var(--u) * 15);border-radius:50%;border:calc(var(--u) * .7) solid var(--coral);display:grid;place-items:center;font:700 calc(var(--u) * 5.4)/1 Oswald,sans-serif;color:var(--coral);margin-top:calc(var(--u) * 4);flex:none}
+.avatar::before,.avatar::after{content:"";position:absolute;inset:calc(var(--u) * -.7);border-radius:50%;border:calc(var(--u) * .5) solid var(--coral);opacity:0}
+.busy .avatar::before{animation:ring 1s ease-out infinite}
+.busy .avatar::after{animation:ring 1s ease-out .5s infinite}
+@keyframes ring{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(1.75)}}
+.online .avatar{background:var(--red);border-color:var(--red);color:var(--paper)}
+.status{font:600 calc(var(--u) * 4.6)/1.25 Inter,sans-serif;margin:0;min-height:calc(var(--u) * 11.5);display:flex;align-items:center;text-wrap:balance}
+.status.swap{animation:swap .22s ease-out}
+@keyframes swap{from{opacity:0;transform:translateY(calc(var(--u) * 1.5))}}
+
+/* ---------- round button in the socket ---------- */
+.knob{position:absolute;left:40.75%;top:60.89%;width:18.5%;aspect-ratio:1;border:0;padding:0;border-radius:50%;
+  background:radial-gradient(circle at 36% 30%,#ff7a7e 0%,var(--red) 38%,#b3161c 100%);
+  box-shadow:0 calc(var(--u) * 1.1) 0 var(--wine),inset 0 calc(var(--u) * -.8) calc(var(--u) * 1.6) rgba(0,0,0,.28),inset 0 calc(var(--u) * .7) calc(var(--u) * 1) rgba(255,255,255,.35);
+  display:grid;place-items:center;transition:transform .08s,box-shadow .08s}
+.knob svg{width:46%;height:46%;fill:var(--paper)}
+.knob:active,.knob.down{transform:translateY(calc(var(--u) * .9));box-shadow:0 calc(var(--u) * .2) 0 var(--wine),inset 0 calc(var(--u) * -.4) calc(var(--u) * 1.2) rgba(0,0,0,.35),inset 0 calc(var(--u) * .5) calc(var(--u) * 1) rgba(255,255,255,.25)}
+.busy .knob{animation:glow .5s ease-in-out infinite alternate}
+@keyframes glow{to{filter:brightness(1.25) drop-shadow(0 0 calc(var(--u) * 2.5) rgba(255,90,95,.9))}}
+.knob:focus-visible,.cta:focus-visible,.btn:focus-visible,.chip:focus-visible,.mini:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+
+/* ---------- card coming out of the slot ---------- */
+.slot{position:absolute;left:33.2%;top:87.45%;width:33.6%;height:calc(var(--u) * 21);overflow:hidden;pointer-events:none}
+.peek{width:100%;height:100%;background:url(assets/card.webp) center bottom/100% auto no-repeat;transform:translateY(-104%)}
+.slot.out .peek{transform:none;transition:transform .45s steps(9,end)}
+
+/* ---------- controls ---------- */
+.controls{flex:none;width:min(100%,380px);display:flex;flex-direction:column;align-items:stretch;gap:8px}
+.cta{min-height:56px;border:0;border-radius:14px;background:var(--red);color:var(--paper);font:700 21px/1 Oswald,"Arial Narrow",sans-serif;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 5px 0 var(--wine),0 12px 24px rgba(0,0,0,.45);transition:transform .08s,box-shadow .08s,filter .15s;padding:4px 16px 0}
+.cta:hover{filter:brightness(1.08)}
+.cta:active{transform:translateY(4px);box-shadow:0 1px 0 var(--wine),0 6px 14px rgba(0,0,0,.45)}
+.cta[disabled]{cursor:progress;filter:saturate(.75) brightness(.85)}
+.chips{display:flex;gap:6px;justify-content:center;flex-wrap:nowrap}
+.chip{flex:1 1 0;min-height:36px;border:1px solid rgba(245,242,234,.35);background:rgba(18,18,18,.55);border-radius:999px;font:500 13px/1 Inter,sans-serif;color:var(--paper);padding:0 6px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper);font-weight:600}
+.foot{display:flex;align-items:center;justify-content:center;gap:4px 14px;flex-wrap:wrap;font:400 12px/1.2 Inter,sans-serif;color:rgba(245,242,234,.72)}
+.mini{background:none;border:0;min-height:32px;padding:0 4px;font:500 12px/1 Inter,sans-serif;color:rgba(245,242,234,.85);text-decoration:underline;text-decoration-color:rgba(245,242,234,.35);text-underline-offset:3px}
+.mini b{font-weight:600;color:var(--coral)}
+
+/* ---------- prediction card ---------- */
+.layer{position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;gap:14px;padding:14px 16px;background:rgba(10,7,7,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);overflow-y:auto}
+.layer.open{display:flex;animation:fade .25s ease-out}
+@keyframes fade{from{background:rgba(10,7,7,0)}}
+.ticket{--tw:max(250px,min(86vw,370px,calc((100vh - 170px) * .7404)));flex:none;margin-top:auto;width:var(--tw);aspect-ratio:998/1348;background:url(assets/card.webp) center/100% 100% no-repeat;color:var(--ink);
+  padding:calc(var(--tw) * .135) calc(var(--tw) * .1) calc(var(--tw) * .075) calc(var(--tw) * .09);display:flex;flex-direction:column;filter:drop-shadow(0 18px 28px rgba(0,0,0,.55));transform:rotate(-1.2deg);outline:0}
+@supports (height:100dvh){ .ticket{--tw:max(250px,min(86vw,370px,calc((100dvh - 170px) * .7404)))} }
+.ticket h2{margin:0;font:700 calc(var(--tw) * .056)/1.05 Oswald,"Arial Narrow",sans-serif;color:var(--red);letter-spacing:.06em;text-transform:uppercase}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:calc(var(--tw) * .022);font:500 calc(var(--tw) * .034)/1 Inter,sans-serif;color:rgba(18,18,18,.62)}
+.tag{border:1px solid rgba(18,18,18,.45);border-radius:999px;padding:.32em .7em;color:var(--ink)}
+.text{margin:auto 0;font:600 calc(var(--tw) * .059)/1.32 Inter,sans-serif;text-wrap:balance}
+.fine{margin:0;padding-top:calc(var(--tw) * .028);border-top:1px dashed rgba(110,32,41,.55);font:400 calc(var(--tw) * .033)/1.35 Inter,sans-serif;color:rgba(18,18,18,.66)}
+.ticket footer{display:flex;align-items:center;justify-content:space-between;margin-top:calc(var(--tw) * .03)}
+.ticket footer img{height:calc(var(--tw) * .08);width:auto;display:block}
+.ticket footer span{font:700 calc(var(--tw) * .04)/1 Oswald,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--wine)}
+.actions{flex:none;width:min(86vw,370px);margin-bottom:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.layer.open .actions{animation:rise .3s .35s ease-out backwards}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.btn{min-height:48px;border-radius:12px;border:1px solid transparent;font:600 15px/1.1 Inter,sans-serif;padding:0 10px}
+.btn.primary{grid-column:1/-1;min-height:54px;background:var(--red);color:var(--paper);font:700 19px/1 Oswald,"Arial Narrow",sans-serif;letter-spacing:.05em;text-transform:uppercase;box-shadow:0 4px 0 var(--wine);padding-top:3px}
+.btn.primary:active{transform:translateY(3px);box-shadow:0 1px 0 var(--wine)}
+.btn.light{background:var(--paper);color:var(--ink)}
+.btn.ghost{background:rgba(18,18,18,.6);color:var(--paper);border-color:rgba(245,242,234,.5)}
+@media (max-width:400px){ .btn{font-size:13.5px;padding:0 6px;white-space:nowrap} .btn.primary{font-size:19px} .chip{font-size:12.5px} }
+.toast{position:fixed;left:50%;top:14px;z-index:20;transform:translate(-50%,-20px);max-width:min(92vw,420px);background:var(--paper);color:var(--ink);border-radius:12px;padding:11px 16px;font:500 14px/1.3 Inter,sans-serif;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- less motion ---------- */
+[data-motion="reduce"] *,[data-motion="reduce"] *::before,[data-motion="reduce"] *::after{animation:none!important;transition:none!important}
+[data-motion="reduce"] .noise{display:none}
+[data-motion="reduce"] .busy .beacon{opacity:.8}
+[data-motion="reduce"] .ticket{transform:none}
+</style>
+</head>
+<body>
+<div class="room" aria-hidden="true"></div>
+
+<main class="stage">
+  <h1 class="sr">Автомат предсказаний «На линии 2027» компании «Созвон»</h1>
+
+  <div class="machine" id="machine">
+    <img class="body" src="assets/automat.webp" alt="" width="876" height="1511">
+    <i class="beacon" aria-hidden="true"></i>
+
+    <div class="sign" aria-hidden="true">
+      <img src="assets/logo.png" alt="">
+      <span>На линии <b>2027</b></span>
+    </div>
+
+    <div class="screen" id="screen">
+      <canvas class="noise" id="noise" width="96" height="62" aria-hidden="true"></canvas>
+
+      <div class="pane pane-idle show" id="pane-idle">
+        <div class="bar"><i class="dot"></i><span>Линия свободна</span></div>
+        <div class="count" id="count"></div>
+        <p class="lead">В календаре нет свободных слотов. <em>Для 2027 один нашёлся.</em></p>
+        <div class="hint">▼ жмите красную кнопку</div>
+      </div>
+
+      <div class="pane pane-call" id="pane-call">
+        <div class="bar"><i class="dot"></i><span id="bar-call">Идёт соединение</span></div>
+        <div class="avatar">2027</div>
+        <p class="status" id="status"></p>
+      </div>
+
+      <div class="pane pane-done" id="pane-done">
+        <div class="bar"><i class="dot"></i><span>Созвон завершён</span></div>
+        <div class="count">Итоги встречи — на карточке</div>
+        <p class="lead">2027 передаёт привет <em>и ждёт следующего звонка.</em></p>
+      </div>
+    </div>
+
+    <i class="lamp l1" aria-hidden="true"></i><i class="lamp l2" aria-hidden="true"></i><i class="lamp l3" aria-hidden="true"></i>
+
+    <button class="knob" id="knob" type="button" aria-label="Соединиться с 2027">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>
+    </button>
+
+    <div class="slot" id="slot" aria-hidden="true"><div class="peek" id="peek"></div></div>
+  </div>
+
+  <div class="controls">
+    <button class="cta" id="cta" type="button">Соединиться с 2027</button>
+    <div class="chips" role="group" aria-label="Тема предсказания">
+      <button class="chip" type="button" data-topic="all" aria-pressed="true">Любая тема</button>
+      <button class="chip" type="button" data-topic="team" aria-pressed="false">Команда</button>
+      <button class="chip" type="button" data-topic="career" aria-pressed="false">Карьера</button>
+      <button class="chip" type="button" data-topic="rest" aria-pressed="false">Отдых</button>
+    </div>
+    <div class="foot">
+      <button class="mini" id="t-sound" type="button" aria-pressed="true">Звук: <b>вкл</b></button>
+      <button class="mini" id="t-motion" type="button" aria-pressed="false">Меньше движения: <b>выкл</b></button>
+      <span>Шуточный автомат, компания вымышленная</span>
+    </div>
+  </div>
+</main>
+
+<div class="layer" id="layer">
+  <article class="ticket" id="ticket" tabindex="-1" aria-labelledby="t-title">
+    <h2 id="t-title">Итоги созвона с 2027</h2>
+    <div class="meta"><span id="t-num"></span><span class="tag" id="t-tag"></span></div>
+    <p class="text" id="t-text"></p>
+    <p class="fine">Сигнал из 2027 не проверен. Точность не гарантируется, настроение — да.</p>
+    <footer><img src="assets/logo.png" alt="Созвон"><span>На линии 2027</span></footer>
+  </article>
+  <div class="actions">
+    <button class="btn primary" id="again" type="button">Соединиться ещё раз</button>
+    <button class="btn light" id="copy" type="button">Скопировать</button>
+    <button class="btn ghost" id="save" type="button">Сохранить картинку</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sr" id="live" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- 36 predictions: team / career / rest ---------- */
+  const P = [
+    ['team', 'В 2027-м вас будет слышно с первого раза. Все удивятся, но вида не подадут.'],
+    ['team', 'Встреча, которая могла быть письмом, наконец станет письмом. Письмо будет коротким.'],
+    ['team', 'В вашем календаре обнаружится свободный слот. Коллеги будут приходить на него посмотреть.'],
+    ['team', 'Кто-то скажет «давайте быстро, на пять минут» — и это действительно займёт пять минут.'],
+    ['team', 'Соседская собака залает ровно в тот момент, когда ваш микрофон уже выключен.'],
+    ['team', 'Правильный экран покажут с первой попытки. Возможно, это сделаете вы.'],
+    ['team', 'На созвоне без повестки внезапно появится повестка. Никто не признается, кто её принёс.'],
+    ['team', 'Ваше «у меня небольшой комментарий» действительно окажется небольшим. Команда запомнит этот день.'],
+    ['team', 'Все придут на встречу вовремя. Первые две минуты никто не будет знать, что делать.'],
+    ['team', 'Фраза «давайте вынесем это в отдельную встречу» прозвучит, но отдельная встреча не понадобится.'],
+    ['team', 'Чей-то кот выйдет в кадр и соберёт больше реакций, чем квартальный отчёт. Заслуженно.'],
+    ['team', 'Связь не прервётся на самом важном месте. Придётся договорить до конца.'],
+    ['career', 'Ваша идея, высказанная на 47-й минуте, окажется лучшей за встречу. Её даже запишут.'],
+    ['career', 'Задача «на подумать» додумается сама, пока вы пьёте чай.'],
+    ['career', 'Вас назначат ответственным за хорошие новости. Работы будет много.'],
+    ['career', 'Презентация откроется с первого раза, и слайды окажутся в нужном порядке.'],
+    ['career', 'Вы скажете «коллеги, у меня всё» на десять минут раньше — и вам поверят.'],
+    ['career', 'Ваш статус «на встрече» сменится на «в ударе» и продержится до конца квартала.'],
+    ['career', 'Дедлайн придёт вовремя, а вы — ещё раньше.'],
+    ['career', 'На вопрос «есть вопросы?» впервые честно ответят «нет» — потому что всё и правда понятно.'],
+    ['career', 'Таблица сойдётся с первого раза. Вы пересчитаете ещё дважды, просто чтобы полюбоваться.'],
+    ['career', 'Вас попросят рассказать о результатах коротко, и коротко не получится: их окажется слишком много.'],
+    ['career', 'Ваше письмо прочитают до конца, включая постскриптум.'],
+    ['career', 'Протокол встречи уместится в одно слово: «сделали».'],
+    ['rest', 'Отпуск пройдёт без единого «можешь подключиться на минутку?».'],
+    ['rest', 'В пятницу вечером календарь сам отменит всё лишнее и пожелает хороших выходных.'],
+    ['rest', 'Вы закроете ноутбук в 18:00, и он не будет возражать.'],
+    ['rest', 'Обед наконец попадёт в календарь как обязательная встреча. С участием супа.'],
+    ['rest', 'На выходных вы спросите «меня слышно?» только в лесу — и эхо ответит «да».'],
+    ['rest', 'Уведомления затихнут ровно тогда, когда вы возьмёте мандарин.'],
+    ['rest', 'Каникулы покажутся длиннее обычного. Проверка покажет: вы просто отдохнули.'],
+    ['rest', 'Самая продуктивная встреча года пройдёт на кухне у чайника, без записи и протокола.'],
+    ['rest', 'Вы досмотрите сериал, который давно откладывали. Финал не разочарует.'],
+    ['rest', 'В переговорке кто-то оставит коробку конфет. Забронировать её будет нельзя, съесть — можно.'],
+    ['rest', 'Виртуальный фон на звонке сменится настоящим видом из окна — и он окажется лучше.'],
+    ['rest', '31 декабря 2027-го вы подведёте итоги года за минуту: «было хорошо, повторим».']
+  ];
+  const TOPIC = { all: 'Любая тема', team: 'Команда', career: 'Карьера', rest: 'Отдых' };
+
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+  const machine = $('machine'), cta = $('cta'), knob = $('knob'), layer = $('layer'), ticket = $('ticket');
+  const slot = $('slot'), peek = $('peek'), statusEl = $('status'), live = $('live'), toast = $('toast');
+  const panes = { idle: $('pane-idle'), call: $('pane-call'), done: $('pane-done') };
+  const lamps = [...document.querySelectorAll('.lamp')];
+
+  /* ---------- small helpers ---------- */
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
+  };
+  const reduced = () => root.dataset.motion === 'reduce';
+  let skipWait = null;
+  const wait = ms => new Promise(res => {
+    const t = setTimeout(done, ms);
+    function done() { clearTimeout(t); skipWait = null; res(); }
+    skipWait = done;
+  });
+  function pane(name) {
+    for (const k in panes) panes[k].classList.toggle('show', k === name);
+  }
+  function setStatus(text) {
+    statusEl.textContent = text;
+    statusEl.classList.remove('swap');
+    void statusEl.offsetWidth;
+    statusEl.classList.add('swap');
+    live.textContent = text;
+  }
+  let toastTimer;
+  function say(text) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  }
+
+  /* ---------- countdown on the screen ---------- */
+  (function countdown() {
+    const days = Math.ceil((new Date(2027, 0, 1) - new Date()) / 864e5);
+    const n = Math.abs(days) % 100, n1 = n % 10;
+    const word = n > 10 && n < 20 ? 'дней' : n1 === 1 ? 'день' : n1 >= 2 && n1 <= 4 ? 'дня' : 'дней';
+    const left = n > 10 && n < 20 ? 'осталось' : n1 === 1 ? 'остался' : 'осталось';
+    $('count').textContent = days > 0 ? `До 2027 ${left} ${days} ${word}` : '2027 уже на связи';
+  })();
+
+  /* ---------- deck: no repeats until every text was shown ---------- */
+  const decks = {};
+  let topic = 'all', last = -1, current = null;
+  function draw() {
+    let d = decks[topic], secondRound = false;
+    if (!d || !d.length) {
+      secondRound = !!d;
+      d = P.map((_, i) => i).filter(i => topic === 'all' || P[i][0] === topic);
+      for (let i = d.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [d[i], d[j]] = [d[j], d[i]];
+      }
+      decks[topic] = d;
+    }
+    if (d.length > 1 && d[d.length - 1] === last) {
+      [d[0], d[d.length - 1]] = [d[d.length - 1], d[0]];
+    }
+    last = d.pop();
+    return { id: last, cat: P[last][0], text: P[last][1], secondRound };
+  }
+
+  /* ---------- sound, synthesised in the browser ---------- */
+  const Snd = {
+    ctx: null, on: store.get('sozvon-sound') !== 'off',
+    ensure() {
+      if (!this.on) return null;
+      if (!this.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        this.ctx = new AC();
+        this.out = this.ctx.createGain();
+        this.out.gain.value = 0.2;
+        this.out.connect(this.ctx.destination);
+      }
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      return this.ctx;
+    },
+    tone(freq, at, dur, type = 'sine', vol = 0.4) {
+      const c = this.ensure(); if (!c) return;
+      const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + at;
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(this.out);
+      o.start(t); o.stop(t + dur + 0.03);
+    },
+    noise(at, dur, vol = 0.3, freq = 2500) {
+      const c = this.ensure(); if (!c) return;
+      const len = Math.max(1, Math.floor(c.sampleRate * dur));
+      const buf = c.createBuffer(1, len, c.sampleRate), data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + at;
+      s.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 0.8;
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(f); f.connect(g); g.connect(this.out);
+      s.start(t);
+    },
+    click() { this.noise(0, 0.05, 0.5, 1700); this.tone(130, 0, 0.1, 'sine', 0.6); },
+    dial() { this.tone(425, 0.05, 0.2, 'sine', 0.3); this.tone(425, 0.33, 0.2, 'sine', 0.3); this.noise(0, 0.6, 0.05, 5200); },
+    blip() { this.tone(520, 0, 0.09, 'triangle', 0.3); this.tone(780, 0.1, 0.13, 'triangle', 0.3); },
+    ding() { this.tone(660, 0, 0.4, 'sine', 0.35); this.tone(990, 0.09, 0.55, 'sine', 0.28); },
+    print() { for (let i = 0; i < 9; i++) this.noise(i * 0.05, 0.03, 0.4, 2400 + (i % 3) * 500); },
+    paper() { this.noise(0, 0.16, 0.22, 1100); }
+  };
+
+  /* ---------- TV static ---------- */
+  const noiseCv = $('noise'), nctx = noiseCv.getContext('2d');
+  let noiseTimer = null;
+  function noise(on) {
+    clearInterval(noiseTimer); noiseTimer = null;
+    if (!on || reduced()) return;
+    const img = nctx.createImageData(noiseCv.width, noiseCv.height), d = img.data;
+    noiseTimer = setInterval(() => {
+      for (let i = 0; i < d.length; i += 4) {
+        const v = Math.random() * 255 | 0;
+        d[i] = v; d[i + 1] = v * 0.85; d[i + 2] = v * 0.85; d[i + 3] = 255;
+      }
+      nctx.putImageData(img, 0, 0);
+    }, 70);
+  }
+
+  /* ---------- the call ---------- */
+  let state = 'idle';
+  function lamp(n) { lamps.forEach((l, i) => l.classList.toggle('on', i < n)); }
+  function busy(on) {
+    machine.classList.toggle('busy', on);
+    cta.disabled = on;
+    knob.setAttribute('aria-disabled', on ? 'true' : 'false');
+    cta.textContent = on ? 'Соединяем…' : (current ? 'Соединиться ещё раз' : 'Соединиться с 2027');
+    noise(on);
+  }
+
+  async function connect() {
+    if (state === 'connecting' || state === 'printing') return;
+    closeTicket(false);
+    state = 'connecting';
+    const pick = draw(), slow = reduced() ? 0.5 : 1;
+
+    Snd.click();
+    knob.classList.add('down');
+    if (!reduced()) { machine.classList.remove('bump'); void machine.offsetWidth; machine.classList.add('bump'); }
+    setTimeout(() => knob.classList.remove('down'), 160);
+
+    panes.call.classList.remove('online');
+    $('bar-call').textContent = 'Идёт соединение';
+    pane('call'); busy(true);
+
+    if (pick.secondRound) {
+      const all = topic === 'all';
+      setStatus(all ? 'Вы обзвонили весь 2027-й. Идём на второй круг' : `Тема «${TOPIC[topic]}» пройдена. Идём на второй круг`);
+      lamp(1); Snd.dial();
+      await wait(1300 * slow);
+    } else {
+      setStatus('Ищем свободный слот в 2027…');
+      lamp(1); Snd.dial();
+      await wait(650 * slow);
+    }
+    setStatus('Меня слышно?'); lamp(2); Snd.blip();
+    await wait(650 * slow);
+    panes.call.classList.add('online');
+    $('bar-call').textContent = 'На связи';
+    setStatus('2027 на линии'); lamp(3); Snd.ding();
+    await wait(650 * slow);
+
+    state = 'printing';
+    current = pick;
+    $('t-num').textContent = `Протокол № ${pick.id + 1} из ${P.length}`;
+    $('t-tag').textContent = TOPIC[pick.cat];
+    $('t-text').textContent = pick.text;
+    if (!reduced()) {
+      slot.classList.add('out'); Snd.print();
+      await wait(470);
+    }
+    openTicket();
+    busy(false); lamp(0); pane('done');
+    state = 'card';
+    live.textContent = `Итоги созвона с 2027. ${pick.text}`;
+  }
+
+  function openTicket() {
+    layer.classList.add('open');
+    ticket.style.transition = 'none';
+    ticket.style.transform = 'none';
+    if (!reduced()) {
+      const from = peek.getBoundingClientRect(), to = ticket.getBoundingClientRect();
+      const s = from.width / to.width;
+      const dx = from.left + from.width / 2 - (to.left + to.width / 2), dy = from.top - to.top;
+      ticket.style.transformOrigin = '50% 0';
+      ticket.style.transform = `translate(${dx}px,${dy}px) scale(${s})`;
+      void ticket.offsetWidth;
+      ticket.style.transition = 'transform .5s cubic-bezier(.2,.85,.25,1.1)';
+      ticket.style.transform = 'rotate(-1.2deg)';
+      Snd.paper();
+      setTimeout(() => { slot.classList.remove('out'); }, 120);
+    } else {
+      ticket.style.transform = '';
+    }
+    setTimeout(() => $('again').focus({ preventScroll: true }), reduced() ? 0 : 520);
+  }
+
+  function closeTicket(backToIdle) {
+    if (!layer.classList.contains('open')) return;
+    layer.classList.remove('open');
+    slot.classList.remove('out');
+    if (backToIdle) { state = 'idle'; pane('idle'); cta.focus({ preventScroll: true }); }
+  }
+
+  /* ---------- copy & save ---------- */
+  async function copyText() {
+    if (!current) return;
+    let ok = false;
+    try { await navigator.clipboard.writeText(current.text); ok = true; }
+    catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = current.text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+      ta.remove();
+    }
+    const b = $('copy');
+    if (ok) {
+      b.textContent = 'Скопировано ✓';
+      say('Скопировано. Можно переслать коллеге вместо письма');
+      setTimeout(() => { b.textContent = 'Скопировать'; }, 2200);
+    } else {
+      say('Не получилось скопировать. Выделите текст на карточке вручную');
+    }
+  }
+
+  const loadImg = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+  function wrap(ctx, text, maxW) {
+    const words = text.split(' '), lines = [];
+    let line = '';
+    for (const w of words) {
+      const probe = line ? line + ' ' + w : w;
+      if (ctx.measureText(probe).width > maxW && line) { lines.push(line); line = w; } else line = probe;
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+  async function saveImage() {
+    if (!current) return;
+    const b = $('save');
+    b.disabled = true;
+    try {
+      const [card, logo] = await Promise.all([loadImg('assets/card.webp'), loadImg('assets/logo.png')]);
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const W = 998, H = 1348, L = W * 0.09, R = W * 0.9, maxW = R - L;
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const c = cv.getContext('2d');
+      c.fillStyle = '#121212'; c.fillRect(0, 0, W, H);
+      c.drawImage(card, 0, 0, W, H);
+      c.textBaseline = 'alphabetic';
+
+      c.fillStyle = '#E4252B'; c.font = '700 56px Oswald, "Arial Narrow", sans-serif';
+      if ('letterSpacing' in c) c.letterSpacing = '3px';
+      c.fillText('ИТОГИ СОЗВОНА С 2027', L, 190);
+      if ('letterSpacing' in c) c.letterSpacing = '0px';
+
+      c.fillStyle = 'rgba(18,18,18,.62)'; c.font = '500 34px Inter, sans-serif';
+      c.fillText(`Протокол № ${current.id + 1} из ${P.length}`, L, 250);
+      const tag = TOPIC[current.cat], tw = c.measureText(tag).width;
+      c.fillStyle = '#121212'; c.fillText(tag, R - tw - 22, 250);
+      c.strokeStyle = 'rgba(18,18,18,.45)'; c.lineWidth = 2;
+      c.beginPath(); c.roundRect(R - tw - 44, 212, tw + 44, 54, 27); c.stroke();
+
+      const footY = H - W * 0.075;                       // bottom of the logo
+      const logoH = 80, logoW = logoH * logo.width / logo.height;
+      c.font = '400 33px Inter, sans-serif';
+      const fine = wrap(c, 'Сигнал из 2027 не проверен. Точность не гарантируется, настроение — да.', maxW);
+      const fineTop = footY - logoH - 30 - fine.length * 45;
+      c.strokeStyle = 'rgba(110,32,41,.55)'; c.setLineDash([10, 8]);
+      c.beginPath(); c.moveTo(L, fineTop - 26); c.lineTo(R, fineTop - 26); c.stroke(); c.setLineDash([]);
+      c.fillStyle = 'rgba(18,18,18,.66)';
+      fine.forEach((ln, i) => c.fillText(ln, L, fineTop + 28 + i * 45));
+
+      c.fillStyle = '#121212'; c.font = '600 59px Inter, sans-serif';
+      const lines = wrap(c, current.text, maxW), lh = 78;
+      const top = 290, bottom = fineTop - 40;
+      let y = top + (bottom - top - lines.length * lh) / 2 + 56;
+      lines.forEach(ln => { c.fillText(ln, L, y); y += lh; });
+
+      c.drawImage(logo, L, footY - logoH, logoW, logoH);
+      c.fillStyle = '#6E2029'; c.font = '700 40px Oswald, "Arial Narrow", sans-serif';
+      if ('letterSpacing' in c) c.letterSpacing = '2px';
+      const sig = 'НА ЛИНИИ 2027';
+      c.fillText(sig, R - c.measureText(sig).width, footY - 22);
+
+      const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+      const url = URL.createObjectURL(blob), a = document.createElement('a');
+      a.href = url; a.download = `sozvon-2027-protokol-${current.id + 1}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      say('Карточка сохранена картинкой');
+    } catch (e) {
+      say('Не получилось сохранить картинку. Попробуйте скопировать текст');
+    }
+    b.disabled = false;
+  }
+
+  /* ---------- toggles ---------- */
+  function paintToggles() {
+    const s = $('t-sound'), m = $('t-motion');
+    s.setAttribute('aria-pressed', Snd.on); s.querySelector('b').textContent = Snd.on ? 'вкл' : 'выкл';
+    m.setAttribute('aria-pressed', reduced()); m.querySelector('b').textContent = reduced() ? 'вкл' : 'выкл';
+  }
+  const savedMotion = store.get('sozvon-motion');
+  const prefers = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  root.dataset.motion = (savedMotion ? savedMotion === 'reduce' : prefers) ? 'reduce' : 'full';
+  paintToggles();
+
+  $('t-sound').addEventListener('click', () => {
+    Snd.on = !Snd.on; store.set('sozvon-sound', Snd.on ? 'on' : 'off');
+    if (Snd.on) Snd.blip();
+    paintToggles();
+  });
+  $('t-motion').addEventListener('click', () => {
+    root.dataset.motion = reduced() ? 'full' : 'reduce';
+    store.set('sozvon-motion', root.dataset.motion);
+    if (reduced()) noise(false);
+    paintToggles();
+  });
+
+  /* ---------- wiring ---------- */
+  cta.addEventListener('click', connect);
+  knob.addEventListener('click', connect);
+  $('again').addEventListener('click', connect);
+  $('copy').addEventListener('click', copyText);
+  $('save').addEventListener('click', saveImage);
+  $('screen').addEventListener('click', () => { if (state === 'connecting' && skipWait) skipWait(); });
+  layer.addEventListener('click', e => { if (e.target === layer) closeTicket(true); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTicket(true); });
+  document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => {
+    topic = ch.dataset.topic;
+    document.querySelectorAll('.chip').forEach(o => o.setAttribute('aria-pressed', o === ch));
+  }));
+})();
+</script>
+</body>
+</html>
