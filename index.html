@@ -219,7 +219,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   <div class="actions">
     <button class="btn primary" id="again" type="button">Соединиться ещё раз</button>
     <button class="btn light" id="copy" type="button">Скопировать</button>
-    <button class="btn ghost" id="save" type="button">Сохранить картинку</button>
+    <button class="btn ghost" id="save" type="button">Сохранить картинку</button><button class="mini" id="close" type="button" style="grid-column:1/-1;justify-self:center">Вернуться к автомату</button>
   </div>
 </div>
 
@@ -401,7 +401,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   }
 
   /* ---------- the call ---------- */
-  let state = 'idle';
+  let state = 'idle', openedAt = 0;
   function lamp(n) { lamps.forEach((l, i) => l.classList.toggle('on', i < n)); }
   function busy(on) {
     machine.classList.toggle('busy', on);
@@ -459,7 +459,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   }
 
   function openTicket() {
-    layer.classList.add('open');
+    layer.classList.add('open'); openedAt = performance.now();
     ticket.style.transition = 'none';
     ticket.style.transform = 'none';
     if (!reduced()) {
@@ -476,7 +476,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
     } else {
       ticket.style.transform = '';
     }
-    setTimeout(() => $('again').focus({ preventScroll: true }), reduced() ? 0 : 520);
+    setTimeout(() => ticket.focus({ preventScroll: true }), reduced() ? 0 : 520);
   }
 
   function closeTicket(backToIdle) {
@@ -606,11 +606,11 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   /* ---------- wiring ---------- */
   cta.addEventListener('click', connect);
   knob.addEventListener('click', connect);
-  $('again').addEventListener('click', connect);
+  $('again').addEventListener('click', () => { if (performance.now() - openedAt > 900) connect(); });
   $('copy').addEventListener('click', copyText);
   $('save').addEventListener('click', saveImage);
   $('screen').addEventListener('click', () => { if (state === 'connecting' && skipWait) skipWait(); });
-  layer.addEventListener('click', e => { if (e.target === layer) closeTicket(true); });
+  $('close').addEventListener('click', () => closeTicket(true));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTicket(true); });
   document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => {
     topic = ch.dataset.topic;
