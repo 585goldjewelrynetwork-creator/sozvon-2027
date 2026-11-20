@@ -118,14 +118,17 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .ticket{--tw:max(250px,min(86vw,370px,calc((100vh - 170px) * .7404)));flex:none;margin-top:auto;width:var(--tw);aspect-ratio:998/1348;background:url(card.webp) center/100% 100% no-repeat;color:var(--ink);
   padding:calc(var(--tw) * .135) calc(var(--tw) * .1) calc(var(--tw) * .075) calc(var(--tw) * .09);display:flex;flex-direction:column;box-shadow:0 26px 34px -16px rgba(0,0,0,.7);outline:0}
 @supports (height:100dvh){ .ticket{--tw:max(250px,min(86vw,370px,calc((100dvh - 170px) * .7404)))} }
+.ticket.has-pic{aspect-ratio:998/1580;--tw:max(250px,min(86vw,370px,calc((100vh - 170px) * .6316)))}
+@supports (height:100dvh){ .ticket.has-pic{--tw:max(250px,min(86vw,370px,calc((100dvh - 170px) * .6316)))} }
 .ticket h2{margin:0;font:700 calc(var(--tw) * .056)/1.05 Oswald,"Arial Narrow",sans-serif;color:var(--red);letter-spacing:.06em;text-transform:uppercase}
 .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:calc(var(--tw) * .022);font:500 calc(var(--tw) * .034)/1 Inter,sans-serif;color:rgba(18,18,18,.62)}
 .tag{border:1px solid rgba(18,18,18,.45);border-radius:999px;padding:.32em .7em;color:var(--ink)}
 .text{margin:auto 0;font:600 calc(var(--tw) * .059)/1.32 Inter,sans-serif;text-wrap:balance}
 .text.long{font-size:calc(var(--tw) * .05)}
 .text.xlong{font-size:calc(var(--tw) * .045)}
-.text.pic{margin:calc(var(--tw) * .03) 0;flex:1 1 0;min-height:0;position:relative}
-.text.pic img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain}
+.text.pic{margin:calc(var(--tw) * .03) 0;flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:calc(var(--tw) * .028)}
+.text.pic img{flex:1 1 0;min-height:0;width:100%;object-fit:contain;display:block}
+.text.pic .cap{flex:none;font:500 calc(var(--tw) * .041)/1.3 Inter,sans-serif;text-wrap:pretty}
 .fine{margin:0;padding-top:calc(var(--tw) * .028);border-top:1px dashed rgba(110,32,41,.55);font:400 calc(var(--tw) * .033)/1.35 Inter,sans-serif;color:rgba(18,18,18,.66)}
 .ticket footer{display:flex;align-items:center;justify-content:space-between;margin-top:calc(var(--tw) * .03)}
 .ticket footer img{height:calc(var(--tw) * .08);width:auto;display:block}
@@ -484,9 +487,13 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
     const tt = $('t-text');
     tt.textContent = '';
     tt.classList.toggle('pic', !!pick.img);
+    ticket.classList.toggle('has-pic', !!pick.img);
     tt.classList.toggle('long', !pick.img && pick.text.length > 115);
     tt.classList.toggle('xlong', !pick.img && pick.text.length > 160);
-    if (pick.img) { const im = new Image(); im.src = pick.img; im.alt = pick.text; tt.appendChild(im); }
+    if (pick.img) {
+      const im = new Image(); im.src = pick.img; im.alt = ''; tt.appendChild(im);
+      const cap = document.createElement('span'); cap.className = 'cap'; cap.textContent = pick.text; tt.appendChild(cap);
+    }
     else tt.textContent = pick.text;
     if (!reduced()) {
       slot.classList.add('out'); Snd.print();
@@ -567,7 +574,7 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
     try {
       const [card, logo] = await Promise.all([loadImg('card.webp'), loadImg('logo.png')]);
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
-      const W = 998, H = 1348, L = W * 0.09, R = W * 0.9, maxW = R - L;
+      const W = 998, H = current.img ? 1580 : 1348, L = W * 0.09, R = W * 0.9, maxW = R - L;
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const c = cv.getContext('2d');
       c.fillStyle = '#121212'; c.fillRect(0, 0, W, H);
@@ -599,9 +606,15 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
       c.fillStyle = '#121212'; c.font = '600 59px Inter, sans-serif';
       const top = 290, bottom = fineTop - 40;
       if (current.img) {
-        const pic = await loadImg(current.img), boxH = bottom - top - 20;
+        const pic = await loadImg(current.img);
+        c.font = '500 40px Inter, sans-serif';
+        const cap = wrap(c, current.text, maxW), clh = 52, capH = cap.length * clh;
+        const boxH = bottom - top - capH - 46;
         const k = Math.min(maxW / pic.width, boxH / pic.height), pw = pic.width * k, ph = pic.height * k;
-        c.drawImage(pic, L + (maxW - pw) / 2, top + (boxH - ph) / 2, pw, ph);
+        const y0 = top + 10 + (boxH - ph) / 2;
+        c.drawImage(pic, L + (maxW - pw) / 2, y0, pw, ph);
+        let cy = y0 + ph + 26 + 40;
+        cap.forEach(ln => { c.fillText(ln, L, cy); cy += clh; });
       } else {
         let fs = 59, lines, lh;
         for (;;) {
