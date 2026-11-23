@@ -404,9 +404,16 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
         const p = a.play(); if (p && p.catch) p.catch(() => {});
       } catch (e) { /* no audio element */ }
     },
+    /* iOS stops page audio after the share sheet, an app switch, a call or a locked screen.
+       Safari then reports the state "interrupted" (not only "suspended"), so wake it from
+       any state other than "running"; if it does not wake up, build a fresh one next time. */
     ensure() {
       if (!this.on) return null;
       this.unlock();
+      if (this.ctx && (this.ctx.state === 'closed' || this.stale)) {
+        try { if (this.ctx.state !== 'closed') this.ctx.close(); } catch (e) { /* already gone */ }
+        this.ctx = null; this.stale = false;
+      }
       if (!this.ctx) {
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return null;
@@ -415,9 +422,15 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
         this.out.gain.value = 0.2;
         this.out.connect(this.ctx.destination);
       }
-      if (this.ctx.state === 'suspended') this.ctx.resume();
+      if (this.ctx.state !== 'running') {
+        const c = this.ctx;
+        try { const p = c.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* ignore */ }
+        setTimeout(() => { if (this.ctx === c && c.state !== 'running') this.stale = true; }, 600);
+      }
       return this.ctx;
     },
+    /* after leaving the page, replay the "playback" unlock on the next tap */
+    sleep() { this.unlocked = false; },
     tone(freq, at, dur, type = 'sine', vol = 0.4) {
       const c = this.ensure(); if (!c) return;
       const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + at;
@@ -736,6 +749,12 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
   $('close').addEventListener('click', () => closeTicket(true));
   $('x').addEventListener('click', () => closeTicket(true));
   $('pv-close').addEventListener('click', hidePreview);
+  /* sound: note when the page is left, wake it on the first tap after coming back */
+  document.addEventListener('visibilitychange', () => { if (document.hidden) Snd.sleep(); });
+  window.addEventListener('pagehide', () => Snd.sleep());
+  document.addEventListener('pointerdown', () => {
+    if (Snd.on && Snd.ctx && (Snd.ctx.state !== 'running' || !Snd.unlocked)) Snd.ensure();
+  }, { passive: true });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (!pv.hidden) hidePreview(); else closeTicket(true);
