@@ -348,30 +348,21 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
     $('count').textContent = days > 0 ? `До 2027 ${left} ${days} ${word}` : '2027 уже на связи';
   })();
 
-  /* ---------- deck: no repeats until every text was shown ---------- */
-  const decks = {};
-  let topic = 'all', last = -1, current = null, firstMeme = true;
+  /* ---------- deck: one shared "seen" list for all topics,
+     so a card shown under any topic does not come back until its topic is used up ---------- */
+  const seen = new Set();
+  let topic = 'all', last = -1, current = null;
   function draw() {
-    let d = decks[topic], secondRound = false;
-    if (!d || !d.length) {
-      secondRound = !!d;
-      d = P.map((_, i) => i).filter(i => topic === 'all' || P[i][0] === topic);
-      for (let i = d.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [d[i], d[j]] = [d[j], d[i]];
-      }
-      decks[topic] = d;
+    const pool = P.map((_, i) => i).filter(i => topic === 'all' || P[i][0] === topic);
+    let fresh = pool.filter(i => !seen.has(i)), secondRound = false;
+    if (!fresh.length) {
+      secondRound = true;
+      pool.forEach(i => seen.delete(i));
+      fresh = pool.slice();
     }
-    if (firstMeme) {
-      for (let k = d.length - 1; k >= 0; k--) {
-        if (P[d[k]][2]) { d.push(d.splice(k, 1)[0]); break; }
-      }
-      firstMeme = false;
-    }
-    if (d.length > 1 && d[d.length - 1] === last) {
-      [d[0], d[d.length - 1]] = [d[d.length - 1], d[0]];
-    }
-    last = d.pop();
+    if (fresh.length > 1) fresh = fresh.filter(i => i !== last);
+    last = fresh[Math.floor(Math.random() * fresh.length)];
+    seen.add(last);
     return { id: last, cat: P[last][0], text: P[last][1], img: P[last][2] || null, secondRound };
   }
 
